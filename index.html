@@ -20,7 +20,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6495ff 0%, #0059ff 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -35,7 +35,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6495ff 0%, #216DFF 100%);
             color: white;
             padding: 15px;
             text-align: center;
@@ -158,7 +158,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6495ff 0%, #216DFF 100%);
             color: white;
             border: none;
             font-size: 30px;
@@ -285,7 +285,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ff7728;
             cursor: pointer;
         }
 
@@ -293,7 +293,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ff7728;
             cursor: pointer;
             border: none;
         }
@@ -301,14 +301,14 @@
         .slider-value {
             min-width: 30px;
             font-weight: 600;
-            color: #667eea;
+            color: #ff7728;
             font-size: 16px;
         }
 
         .btn-save {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ff7728;
             color: white;
             border: none;
             border-radius: 8px;
@@ -323,7 +323,7 @@
         }
 
         .task-list {
-            padding: 20px 30px 30px 30px;
+            padding: 10px;
         }
 
         .task-item {
@@ -392,7 +392,7 @@
         }
 
         .score-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ff5e00;
             color: white;
             padding: 8px 15px;
             border-radius: 20px;
@@ -401,7 +401,7 @@
         }
 
         .btn-delete {
-            background: #dc3545;
+            background: #ff0019;
             color: white;
             border: none;
             padding: 8px 15px;
@@ -412,11 +412,11 @@
         }
 
         .btn-delete:hover {
-            background: #c82333;
+            background: #eb0017;
         }
 
         .btn-edit {
-            background: #ffc107;
+            background: #ff7728;
             color: #212529;
             border: none;
             padding: 8px 15px;
@@ -428,7 +428,7 @@
         }
 
         .btn-edit:hover {
-            background: #e0a800;
+            background: #e96c24;
         }
 
         .task-actions {
@@ -598,7 +598,7 @@
 
         .progress-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #ff8945 0%, #ff5e00 100%);
             border-radius: 2px;
             transition: width 0.3s ease;
         }
@@ -706,7 +706,7 @@
             </div>
 
             <div class="weights-info">
-                <strong>Current Formula:</strong> Score = (Importance × <span id="displayImportanceWeight">0.1</span>) + (Effort × <span id="displayEffortWeight">0.4</span>) + ((Days remaining ÷ 2) × <span id="displayUrgencyWeight">0.5</span>)
+                <strong>Current Formula:</strong> Score = (Importance × <span id="displayImportanceWeight">0.1</span>) + (Effort × <span id="displayEffortWeight">0.4</span>) + ((5-Days remaining ÷ 2) × <span id="displayUrgencyWeight">0.5</span>)
             </div>
 
             <div class="form-group">
@@ -734,7 +734,7 @@
             </div>
 
             <div class="weight-note">
-                💡 Adjust these weights to change how tasks are prioritized. Higher weights mean that category has more influence on the score.
+                Adjust these weights to change how tasks are prioritized. Higher weights mean that category has more influence on the score.
             </div>
 
             <button class="btn-save" onclick="saveWeights()">Apply Weights</button>
@@ -1092,7 +1092,7 @@
             // Formula using custom weights
             const score = (task.importance * weights.importance) + 
                          (task.effort * weights.effort) + 
-                         ((daysRemaining / 2) * weights.urgency);
+                         ((5-daysRemaining / 2) * weights.urgency);
             
             return {
                 score: score,
@@ -1185,7 +1185,7 @@
                 if (hasSubtasks && isExpanded) {
                     subtasksHtml = `
                         <div class="task-subtasks">
-                            <div class="subtask-progress">📋 Subtasks: ${completedSubtasks}/${totalSubtasks} completed</div>
+                            <div class="subtask-progress">📋 ${completedSubtasks}/${totalSubtasks} completed</div>
                             <div class="progress-bar-container">
                                 <div class="progress-bar-fill" style="width: ${progressPercentage}%"></div>
                             </div>
@@ -1225,19 +1225,18 @@
                     <div class="task-content">
                         <div class="task-title">${task.name}</div>
                         <div class="task-meta">
-                            <span>⏰ ${task.daysRemaining} days left</span>
-                            <span>⭐ Importance: ${task.importance}</span>
+                            <span>⏰ ${task.daysRemaining} days </span>
                             <span>💪 Effort: ${task.effort}</span>
                             ${task.tag ? `<span class="task-tag">${task.tag}</span>` : ''}
-                            ${hasSubtasks && !isExpanded ? `<span>📋 ${completedSubtasks}/${totalSubtasks} subtasks</span>` : ''}
+                            ${hasSubtasks && !isExpanded ? `<span>📋 ${completedSubtasks}/${totalSubtasks}</span>` : ''}
                         </div>
                         ${collapsedProgressBar}
                         ${subtasksHtml}
                     </div>
-                    <div class="score-badge">Score: ${task.score.toFixed(2)}</div>
+                    <div class="score-badge">${task.score.toFixed(2)}</div>
                     <div class="task-actions">
-                        <button class="btn-edit" onclick="editTask(${task.id})">Edit</button>
-                        <button class="btn-delete" onclick="deleteTask(${task.id})">Delete</button>
+                        <button class="btn-edit" onclick="editTask(${task.id})">✎</button>
+                        <button class="btn-delete" onclick="deleteTask(${task.id})">🗑</button>
                     </div>
                 </div>
             `}).join('');
