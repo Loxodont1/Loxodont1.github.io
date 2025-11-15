@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Priority Task List</title>
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#667eea">
-<script>
+    <meta name="theme-color" content="#667eea">
+    <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js');
   }
-</script>
-    <style>
+  </script>
+  <style>
         * {
             margin: 0;
             padding: 0;
@@ -1094,7 +1094,7 @@
             // Formula using custom weights
             const score = (task.importance * weights.importance) + 
                          (task.effort * weights.effort) + 
-                         ((5-daysRemaining / 2) * weights.urgency);
+                         ((daysRemaining / 2) * weights.urgency);
             
             return {
                 score: score,
