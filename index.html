@@ -195,6 +195,8 @@
             padding: 30px;
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             animation: slideIn 0.3s ease-out;
         }
@@ -898,7 +900,7 @@
         <div class="subtask-item">
             <input type="text" id="subtask-${id}" placeholder="Enter subtask..." value="${text}" style="flex:2;">
             <input type="number" id="subtask-duration-${id}" placeholder="min" value="${duration}" style="width:70px; padding:8px; border:2px solid #dee2e6; border-radius:6px; font-size:14px;">
-            <button type="button" class="btn-remove-subtask" onclick="removeSubtaskInput(${id})">Remove</button>
+            <button type="button" class="btn-remove-subtask" onclick="removeSubtaskInput(${id})">X</button>
         </div>
     `;
 }).join('');
