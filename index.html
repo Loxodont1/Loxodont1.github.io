@@ -693,6 +693,12 @@
                     <p class="subtask-empty">No subtasks added yet</p>
                 </div>
             </div>
+            
+            <div class="form-group">
+                <label for="taskNotes">Notes (optional)</label>
+                <textarea id="taskNotes" placeholder="Write additional details here..." 
+                  style="width:100%; height:100px; padding:10px; border:2px solid #dee2e6; border-radius:8px; font-size:14px;"></textarea>
+            </div>
 
             <button class="btn-save" onclick="addTask()">Save Task</button>
         </div>
@@ -807,6 +813,7 @@
             editingTaskId = null;
             // Clear form
             document.getElementById('taskName').value = '';
+            document.getElementById('taskNotes').value = '';
             document.getElementById('taskTag').value = '';
             document.getElementById('importance').value = '0';
             document.getElementById('effort').value = '0';
@@ -834,26 +841,37 @@
         }
 
         function addSubtaskInput() {
-            // Save current values before adding new input
-            const currentValues = subtaskInputs.map(item => {
-                const itemId = typeof item === 'object' ? item.tempId : item;
-                const input = document.getElementById(`subtask-${itemId}`);
-                const text = input ? input.value : (typeof item === 'object' ? item.text : '');
-                
-                if (typeof item === 'object') {
-                    return { ...item, text };
-                } else {
-                    return { tempId: item, text, id: null, completed: false };
-                }
-            });
-            
-            // Add new subtask
-            const id = Date.now();
-            currentValues.push({ tempId: id, text: '', id: null, completed: false });
-            
-            subtaskInputs = currentValues;
-            renderSubtaskInputs();
-        }
+    // Save current values before adding a new one
+    const currentValues = subtaskInputs.map(item => {
+        const id = typeof item === 'object' ? item.tempId : item;
+
+        const textEl = document.getElementById(`subtask-${id}`);
+        const durationEl = document.getElementById(`subtask-duration-${id}`);
+
+        const text = textEl ? textEl.value : (item.text || '');
+        const duration = durationEl ? durationEl.value : (item.duration || '');
+
+        return {
+            tempId: id,
+            id: typeof item === 'object' ? item.id : null,
+            text,
+            duration,
+            completed: item.completed || false
+        };
+    });
+
+    // Add blank subtask
+    currentValues.push({
+        tempId: Date.now(),
+        id: null,
+        text: '',
+        duration: '',
+        completed: false
+    });
+
+    subtaskInputs = currentValues;
+    renderSubtaskInputs();
+}
 
         function removeSubtaskInput(id) {
             subtaskInputs = subtaskInputs.filter(item => {
@@ -872,15 +890,18 @@
             }
 
             container.innerHTML = subtaskInputs.map(item => {
-                const text = typeof item === 'object' ? item.text : '';
-                const id = typeof item === 'object' ? item.tempId : item;
-                return `
-                    <div class="subtask-item">
-                        <input type="text" id="subtask-${id}" placeholder="Enter subtask..." value="${text}">
-                        <button type="button" class="btn-remove-subtask" onclick="removeSubtaskInput(${id})">Remove</button>
-                    </div>
-                `;
-            }).join('');
+    const text = typeof item === 'object' ? item.text : '';
+    const duration = typeof item === 'object' ? (item.duration || '') : '';
+    const id = typeof item === 'object' ? item.tempId : item;
+
+    return `
+        <div class="subtask-item">
+            <input type="text" id="subtask-${id}" placeholder="Enter subtask..." value="${text}" style="flex:2;">
+            <input type="number" id="subtask-duration-${id}" placeholder="min" value="${duration}" style="width:70px; padding:8px; border:2px solid #dee2e6; border-radius:6px; font-size:14px;">
+            <button type="button" class="btn-remove-subtask" onclick="removeSubtaskInput(${id})">Remove</button>
+        </div>
+    `;
+}).join('');
         }
 
         function openSettingsModal() {
@@ -982,6 +1003,7 @@
 
         function addTask() {
             const name = document.getElementById('taskName').value.trim();
+            const notes = document.getElementById('taskNotes').value.trim();
             const tag = document.getElementById('taskTag').value.trim();
             const importance = parseInt(document.getElementById('importance').value);
             const effort = parseInt(document.getElementById('effort').value);
@@ -999,21 +1021,27 @@
 
             // Collect subtasks
             const subtasks = subtaskInputs
-                .map(item => {
-                    const id = typeof item === 'object' ? item.tempId : item;
-                    const input = document.getElementById(`subtask-${id}`);
-                    const text = input ? input.value.trim() : '';
-                    const originalId = typeof item === 'object' ? item.id : null;
-                    const completed = typeof item === 'object' ? item.completed : false;
-                    
-                    return { text, originalId, completed };
-                })
+    .map(item => {
+        const id = typeof item === 'object' ? item.tempId : item;
+
+        const textInput = document.getElementById(`subtask-${id}`);
+        const durationInput = document.getElementById(`subtask-duration-${id}`);
+
+        const text = textInput ? textInput.value.trim() : '';
+        const duration = durationInput ? durationInput.value.trim() : '';
+
+        const originalId = typeof item === 'object' ? item.id : null;
+        const completed = typeof item === 'object' ? item.completed : false;
+
+        return { text, duration, originalId, completed };
+    })
                 .filter(st => st.text !== '')
                 .map(st => ({
-                    id: st.originalId || (Date.now() + Math.random()),
-                    text: st.text,
-                    completed: st.completed
-                }));
+    id: st.originalId || (Date.now() + Math.random()),
+    text: st.text,
+    duration: st.duration,
+    completed: st.completed
+}));
 
             if (editingTaskId) {
                 // Update existing task
@@ -1026,7 +1054,8 @@
                         importance: importance,
                         effort: effort,
                         deadline: deadline,
-                        subtasks: subtasks
+                        subtasks: subtasks,
+                        notes: notes
                     };
                 }
             } else {
@@ -1039,7 +1068,8 @@
                     effort: effort,
                     deadline: deadline,
                     completed: false,
-                    subtasks: subtasks
+                    subtasks: subtasks,
+                    notes: notes
                 };
                 tasks.push(task);
             }
@@ -1057,6 +1087,7 @@
 
             // Populate form
             document.getElementById('taskName').value = task.name;
+            document.getElementById('taskNotes').value = task.notes || '';
             document.getElementById('taskTag').value = task.tag || '';
             document.getElementById('importance').value = task.importance;
             document.getElementById('effort').value = task.effort;
@@ -1066,11 +1097,12 @@
 
             // Populate subtasks
             subtaskInputs = task.subtasks.map(st => ({
-                tempId: Date.now() + Math.random(),
-                id: st.id,
-                text: st.text,
-                completed: st.completed
-            }));
+    tempId: Date.now() + Math.random(),
+    id: st.id,
+    text: st.text,
+    duration: st.duration || '',
+    completed: st.completed
+}));
             renderSubtaskInputs();
 
             // Update modal title
@@ -1177,6 +1209,8 @@
             taskList.innerHTML = sortedTasks.map(task => {
                 const isExpanded = expandedTasks.has(task.id);
                 const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+                const hasNotes = task.notes && task.notes.trim() !== '';
+                const canExpand = hasSubtasks || hasNotes;
                 const completedSubtasks = hasSubtasks ? task.subtasks.filter(st => st.completed).length : 0;
                 const totalSubtasks = hasSubtasks ? task.subtasks.length : 0;
                 const progressPercentage = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
@@ -1190,15 +1224,31 @@
                                 <div class="progress-bar-fill" style="width: ${progressPercentage}%"></div>
                             </div>
                             ${task.subtasks.map(subtask => `
-                                <div class="task-subtask-item ${subtask.completed ? 'completed' : ''}">
-                                    <input 
-                                        type="checkbox" 
-                                        ${subtask.completed ? 'checked' : ''}
-                                        onchange="toggleSubtask(${task.id}, ${subtask.id})"
-                                    >
-                                    <span class="task-subtask-text">${subtask.text}</span>
-                                </div>
-                            `).join('')}
+    <div class="task-subtask-item ${subtask.completed ? 'completed' : ''}">
+        <input 
+            type="checkbox" 
+            ${subtask.completed ? 'checked' : ''}
+            onchange="toggleSubtask(${task.id}, ${subtask.id})"
+        >
+        <span class="task-subtask-text">
+            ${subtask.text}
+            ${subtask.duration ? `<span style="color:#667eea; font-size:12px;"> (${subtask.duration} min)</span>` : ''}
+        </span>
+    </div>
+`).join('')}
+                        </div>
+                    `;
+                }
+                
+                // Notes display
+                let notesHtml = '';
+                if (hasNotes && isExpanded) {
+                    notesHtml = `
+                        <div style="margin-top:15px; padding:12px; background:#fff; border-radius:8px; border:1px solid #e9ecef;">
+                            <div style="font-size:13px; font-weight:600; color:#495057; margin-bottom:8px;">
+                                📝 Notes
+                            </div>
+                            <div style="font-size:14px; color:#212529; white-space:pre-wrap;">${task.notes}</div>
                         </div>
                     `;
                 }
@@ -1215,7 +1265,7 @@
                 
                 return `
                 <div class="task-item ${task.completed ? 'completed' : ''} ${isExpanded ? 'expanded' : ''}">
-                    ${hasSubtasks ? `<button class="expand-btn" onclick="toggleTaskExpansion(${task.id})">▶</button>` : '<div style="width: 24px;"></div>'}
+                    ${canExpand ? `<button class="expand-btn" onclick="toggleTaskExpansion(${task.id})">▶</button>` : '<div style="width: 24px;"></div>'}
                     <input 
                         type="checkbox" 
                         class="task-checkbox" 
@@ -1229,9 +1279,12 @@
                             <span>💪 Effort: ${task.effort}</span>
                             ${task.tag ? `<span class="task-tag">${task.tag}</span>` : ''}
                             ${hasSubtasks && !isExpanded ? `<span>📋 ${completedSubtasks}/${totalSubtasks}</span>` : ''}
+                            ${hasNotes && !isExpanded ? `<span>📝 Note</span>` : ''}
                         </div>
                         ${collapsedProgressBar}
                         ${subtasksHtml}
+                        ${notesHtml}
+                        
                     </div>
                     <div class="score-badge">${task.score.toFixed(2)}</div>
                     <div class="task-actions">
