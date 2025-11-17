@@ -1,6 +1,6 @@
 {
   "name": "TimeMage",
-  "short_name": "Mage",
+  "short_name": "TimeMage",
   "description": "Organize tasks by urgency, importance, and effort",
   "start_url": "/",
   "display": "standalone",
