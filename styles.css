@@ -529,12 +529,6 @@
             background: #f8f9fa;
         }
 
-        .task-subtasks {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #e9ecef;
-        }
-
         .task-subtasks-title {
             font-size: 14px;
             font-weight: 600;
@@ -642,3 +636,40 @@
 .task-subtask-item {
     cursor: move;
 }
+
+/* Fixed header for task items */
+.task-item {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.task-header-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 12px;
+}
+
+.task-item:not(.expanded) .task-header-row {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.task-expandable-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Adjust score and actions to stay in header */
+.task-header-row .score-badge {
+    align-self: flex-start;
+}
+
+.task-header-row .task-actions {
+    align-self: flex-start;
+}
+

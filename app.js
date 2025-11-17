@@ -564,35 +564,41 @@ function initSubtaskDragDrop() {
                 }
                 
                 return `
-                <div class="task-item ${task.completed ? 'completed' : ''} ${isExpanded ? 'expanded' : ''}">
-                    ${canExpand ? `<button class="expand-btn" onclick="toggleTaskExpansion(${task.id})">▶</button>` : '<div style="width: 24px;"></div>'}
-                    <input 
-                        type="checkbox" 
-                        class="task-checkbox" 
-                        ${task.completed ? 'checked' : ''}
-                        onchange="toggleTask(${task.id})"
-                    >
-                    <div class="task-content">
-                        <div class="task-title">${task.name}</div>
-                        <div class="task-meta">
-                            <span>⏰ ${task.daysRemaining} days </span>
-                            <span>💪 Effort: ${task.effort}</span>
-                            ${task.tag ? `<span class="task-tag">${task.tag}</span>` : ''}
-                            ${hasSubtasks && !isExpanded ? `<span>📋 ${completedSubtasks}/${totalSubtasks}</span>` : ''}
-                            ${hasNotes && !isExpanded ? `<span>📝 Note</span>` : ''}
-                        </div>
-                        ${collapsedProgressBar}
-                        ${subtasksHtml}
-                        ${notesHtml}
-                        
-                    </div>
-                    <div class="score-badge">${task.score.toFixed(2)}</div>
-                    <div class="task-actions">
-                        <button class="btn-edit" onclick="editTask(${task.id})">✎</button>
-                        <button class="btn-delete" onclick="deleteTask(${task.id})">X</button>
-                    </div>
+    <div class="task-item ${task.completed ? 'completed' : ''} ${isExpanded ? 'expanded' : ''}">
+        <div class="task-header-row">
+            ${canExpand ? `<button class="expand-btn" onclick="toggleTaskExpansion(${task.id})">▶</button>` : '<div style="width: 24px;"></div>'}
+            <input 
+                type="checkbox" 
+                class="task-checkbox" 
+                ${task.completed ? 'checked' : ''}
+                onchange="toggleTask(${task.id})"
+            >
+            <div class="task-content">
+                <div class="task-title">${task.name}</div>
+                <div class="task-meta">
+                    <span>⏰ ${task.daysRemaining} days </span>
+                    <span>💪 Effort: ${task.effort}</span>
+                    ${task.tag ? `<span class="task-tag">${task.tag}</span>` : ''}
+                    ${hasSubtasks && !isExpanded ? `<span>📋 ${completedSubtasks}/${totalSubtasks}</span>` : ''}
+                    ${hasNotes && !isExpanded ? `<span>📝 Note</span>` : ''}
                 </div>
-            `}).join('');
+                ${collapsedProgressBar}
+            </div>
+            <div class="score-badge">${task.score.toFixed(2)}</div>
+            <div class="task-actions">
+                <button class="btn-edit" onclick="editTask(${task.id})">✎</button>
+                <button class="btn-delete" onclick="deleteTask(${task.id})">X</button>
+            </div>
+        </div>
+        ${isExpanded ? `
+            <div class="task-expandable-content">
+                ${subtasksHtml}
+                ${notesHtml}
+            </div>
+        ` : ''}
+    </div>
+`}).join('');
+            
             // Initialize drag-drop for all expanded task subtasks
             sortedTasks.forEach(task => {
                 if (expandedTasks.has(task.id) && task.subtasks && task.subtasks.length > 0) {
