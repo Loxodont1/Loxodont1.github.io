@@ -150,7 +150,6 @@
 
         return `
             <div class="subtask-item" data-id="${id}">
-                <span style="cursor:move; color:#6c757d; margin-right:8px;">☰</span>
                 <input type="text" id="subtask-${id}" placeholder="Enter subtask..." value="${text}" style="flex:2;">
                 <input type="number" id="subtask-duration-${id}" placeholder="min" value="${duration}" style="width:70px; padding:8px; border:2px solid #dee2e6; border-radius:6px; font-size:14px;">
                 <button type="button" class="btn-remove-subtask" onclick="removeSubtaskInput(${id})">X</button>
@@ -170,6 +169,8 @@ function initSubtaskDragDrop() {
         animation: 150,
         ghostClass: 'sortable-ghost',
         dragClass: 'sortable-drag',
+        delay: 200,
+        delayOnTouchOnly: true,
         handle: '.subtask-item',
         onEnd: function(evt) {
             // Save current values before reordering
@@ -177,9 +178,10 @@ function initSubtaskDragDrop() {
                 const id = typeof item === 'object' ? item.tempId : item;
                 const textEl = document.getElementById(`subtask-${id}`);
                 const durationEl = document.getElementById(`subtask-duration-${id}`);
+                
                 const text = textEl ? textEl.value : (item.text || '');
                 const duration = durationEl ? durationEl.value : (item.duration || '');
-
+                
                 return {
                     tempId: id,
                     id: typeof item === 'object' ? item.id : null,
@@ -189,11 +191,9 @@ function initSubtaskDragDrop() {
                 };
             });
             
-            // Reorder array based on new positions
-            const oldIndex = evt.oldIndex;
-            const newIndex = evt.newIndex;
-            const movedItem = currentValues.splice(oldIndex, 1)[0];
-            currentValues.splice(newIndex, 0, movedItem);
+            // Reorder based on new positions
+            const movedItem = currentValues.splice(evt.oldIndex, 1)[0];
+            currentValues.splice(evt.newIndex, 0, movedItem);
             
             subtaskInputs = currentValues;
             renderSubtaskInputs();
@@ -523,7 +523,6 @@ function initSubtaskDragDrop() {
                             <div class="task-subtasks-sortable" id="subtasks-${task.id}">
                             ${task.subtasks.map(subtask => `
     <div class="task-subtask-item ${subtask.completed ? 'completed' : ''}" data-subtask-id="${subtask.id}">
-        <span style="cursor:move; color:#6c757d; margin-right:8px; font-size:16px;">☰</span>
         <input 
             type="checkbox" 
             ${subtask.completed ? 'checked' : ''}
@@ -615,6 +614,8 @@ function initSubtaskDragDrop() {
         animation: 150,
         ghostClass: 'sortable-ghost',
         dragClass: 'sortable-drag',
+        delay: 200,
+        delayOnTouchOnly: true,
         onEnd: function(evt) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
