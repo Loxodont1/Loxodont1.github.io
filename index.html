@@ -14,16 +14,43 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <button class="close-sidebar-btn" onclick="closeSidebar()">&times;</button>
+        </div>
+        <div class="sidebar-content">
+            <button class="sidebar-item" onclick="navigateToPage('tasks')">
+                <span class="sidebar-icon">📋</span>
+                <span>All Tasks</span>
+            </button>
+            <button class="sidebar-item" onclick="navigateToPage('focus')">
+                <span class="sidebar-icon">🎯</span>
+                <span>Focus Mode</span>
+            </button>
+            <button class="sidebar-item" onclick="openSettingsModalFromSidebar()">
+                <span class="sidebar-icon">⚙️</span>
+                <span>Weight Settings</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+    <!-- Tasks Page -->
+    <div class="page active" id="tasksPage">
         <div class="header">
+            <button class="hamburger-btn" onclick="toggleSidebar()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h1>Tasks</h1>
             <button class="filter-btn" onclick="toggleFilterDropdown()">
                 🏷️ Filter
             </button>
             <div class="filter-dropdown" id="filterDropdown"></div>
-            <button class="settings-btn" onclick="openSettingsModal()">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
         </div>
 
         <div class="task-list" id="taskList">
@@ -33,6 +60,31 @@
             </div>
         </div>
     </div>
+
+    <!-- Focus Page -->
+    <div class="page" id="focusPage">
+        <div class="header">
+            <button class="hamburger-btn" onclick="toggleSidebar()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h1>🎯 FOCUS</h1>
+        </div>
+
+        <div class="focus-content">
+            <div class="focus-instructions">
+                <p>Pin tasks here to focus on them</p>
+            </div>
+            <div class="focus-list" id="focusList">
+                <div class="empty-state">
+                    <h3>No focused tasks</h3>
+                    <p>Go to All Tasks and pin tasks to focus on them!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <button class="add-btn" onclick="openModal()">+</button>
 
@@ -102,7 +154,7 @@
             </div>
 
             <div class="weights-info">
-                <strong>Current Formula:</strong> Score = (Importance × <span id="displayImportanceWeight">0.1</span>) + (Effort × <span id="displayEffortWeight">0.4</span>) + ((5-Days remaining ÷ 2) × <span id="displayUrgencyWeight">0.5</span>)
+                <strong>Current Formula:</strong> Score = (Importance × <span id="displayImportanceWeight">0.1</span>) + (Effort × <span id="displayEffortWeight">0.4</span>) + ((7-Days remaining ÷ 2) × <span id="displayUrgencyWeight">0.5</span>)
             </div>
 
             <div class="form-group">

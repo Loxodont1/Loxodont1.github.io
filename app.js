@@ -3,48 +3,55 @@
   }
 
         let tasks = [];
-        let weights = {
-            importance: 0.1,
-            effort: 0.4,
-            urgency: 0.5
-        };
-        let currentFilter = 'all';
-        let subtaskInputs = [];
-        let expandedTasks = new Set();
-        let editingTaskId = null;
+let weights = {
+    importance: 0.1,
+    effort: 0.4,
+    urgency: 0.5
+};
+let currentFilters = new Set(['all']);
+let subtaskInputs = [];
+let expandedTasks = new Set();
+let editingTaskId = null;
+let currentPage = 'tasks';
+let pinnedTasks = new Set();
 
         // Load data from localStorage on startup
         function loadData() {
-            const savedTasks = localStorage.getItem('tasks');
-            const savedWeights = localStorage.getItem('weights');
-            const savedFilter = localStorage.getItem('currentFilter');
-            
-            if (savedTasks) {
-                tasks = JSON.parse(savedTasks);
-            }
-            if (savedWeights) {
-                weights = JSON.parse(savedWeights);
-                // Update settings modal with saved weights
-                document.getElementById('importanceWeight').value = weights.importance;
-                document.getElementById('effortWeight').value = weights.effort;
-                document.getElementById('urgencyWeight').value = weights.urgency;
-                document.getElementById('importanceWeightValue').textContent = weights.importance.toFixed(1);
-                document.getElementById('effortWeightValue').textContent = weights.effort.toFixed(1);
-                document.getElementById('urgencyWeightValue').textContent = weights.urgency.toFixed(1);
-                document.getElementById('displayImportanceWeight').textContent = weights.importance.toFixed(1);
-                document.getElementById('displayEffortWeight').textContent = weights.effort.toFixed(1);
-                document.getElementById('displayUrgencyWeight').textContent = weights.urgency.toFixed(1);
-            }
-            if (savedFilter) {
-                currentFilter = savedFilter;
-            }
-        }
+    const savedTasks = localStorage.getItem('tasks');
+    const savedWeights = localStorage.getItem('weights');
+    const savedFilters = localStorage.getItem('currentFilters');
+    const savedPinnedTasks = localStorage.getItem('pinnedTasks');
+    
+    if (savedTasks) {
+        tasks = JSON.parse(savedTasks);
+    }
+    if (savedWeights) {
+        weights = JSON.parse(savedWeights);
+        // Update settings modal with saved weights
+        document.getElementById('importanceWeight').value = weights.importance;
+        document.getElementById('effortWeight').value = weights.effort;
+        document.getElementById('urgencyWeight').value = weights.urgency;
+        document.getElementById('importanceWeightValue').textContent = weights.importance.toFixed(1);
+        document.getElementById('effortWeightValue').textContent = weights.effort.toFixed(1);
+        document.getElementById('urgencyWeightValue').textContent = weights.urgency.toFixed(1);
+        document.getElementById('displayImportanceWeight').textContent = weights.importance.toFixed(1);
+        document.getElementById('displayEffortWeight').textContent = weights.effort.toFixed(1);
+        document.getElementById('displayUrgencyWeight').textContent = weights.urgency.toFixed(1);
+    }
+    if (savedFilters) {
+    currentFilters = new Set(JSON.parse(savedFilters));
+}
+    if (savedPinnedTasks) {
+        pinnedTasks = new Set(JSON.parse(savedPinnedTasks));
+    }
+}
 
         // Save data to localStorage
         function saveData() {
             localStorage.setItem('tasks', JSON.stringify(tasks));
             localStorage.setItem('weights', JSON.stringify(weights));
-            localStorage.setItem('currentFilter', currentFilter);
+            localStorage.setItem('currentFilters', JSON.stringify([...currentFilters]));
+            localStorage.setItem('pinnedTasks', JSON.stringify([...pinnedTasks]));
         }
 
         // Set minimum date to today
@@ -150,6 +157,7 @@
 
         return `
             <div class="subtask-item" data-id="${id}">
+                <span class="drag-handle" style="cursor:move; color:#6c757d; margin-right:8px; font-size:18px;">☰</span>
                 <input type="text" id="subtask-${id}" placeholder="Enter subtask..." value="${text}" style="flex:2;">
                 <input type="number" id="subtask-duration-${id}" placeholder="min" value="${duration}" style="width:70px; padding:8px; border:2px solid #dee2e6; border-radius:6px; font-size:14px;">
                 <button type="button" class="btn-remove-subtask" onclick="removeSubtaskInput(${id})">X</button>
@@ -169,9 +177,7 @@ function initSubtaskDragDrop() {
         animation: 150,
         ghostClass: 'sortable-ghost',
         dragClass: 'sortable-drag',
-        delay: 200,
-        delayOnTouchOnly: true,
-        handle: '.subtask-item',
+        handle: '.drag-handle',
         onEnd: function(evt) {
             // Save current values before reordering
             const currentValues = subtaskInputs.map(item => {
@@ -249,44 +255,70 @@ function initSubtaskDragDrop() {
         }
 
         function updateFilterDropdown() {
-            const dropdown = document.getElementById('filterDropdown');
-            
-            // Get all unique tags
-            const tags = [...new Set(tasks.map(t => t.tag).filter(tag => tag))];
-            
-            // Count tasks for each tag
-            const tagCounts = {};
-            tagCounts['all'] = tasks.length;
-            tags.forEach(tag => {
-                tagCounts[tag] = tasks.filter(t => t.tag === tag).length;
-            });
-            
-            // Build dropdown HTML
-            let html = `
-                <div class="filter-option ${currentFilter === 'all' ? 'selected' : ''}" onclick="applyFilter('all')">
-                    <span>All Tasks</span>
-                    <span class="filter-count">${tagCounts['all']}</span>
-                </div>
-            `;
-            
-            tags.forEach(tag => {
-                html += `
-                    <div class="filter-option ${currentFilter === tag ? 'selected' : ''}" onclick="applyFilter('${tag}')">
-                        <span>${tag}</span>
-                        <span class="filter-count">${tagCounts[tag]}</span>
-                    </div>
-                `;
-            });
-            
-            dropdown.innerHTML = html;
-        }
+    const dropdown = document.getElementById('filterDropdown');
+    
+    // Get all unique tags
+    const tags = [...new Set(tasks.map(t => t.tag).filter(tag => tag))];
+    
+    // Count tasks for each tag
+    const tagCounts = {};
+    tagCounts['all'] = tasks.length;
+    tags.forEach(tag => {
+        tagCounts[tag] = tasks.filter(t => t.tag === tag).length;
+    });
+    
+    // Build dropdown HTML
+    let html = `
+        <div class="filter-option ${currentFilters.has('all') ? 'selected' : ''}" onclick="toggleFilter('all')">
+            <span>All Tasks</span>
+            <span class="filter-count">${tagCounts['all']}</span>
+        </div>
+    `;
+    
+    tags.forEach(tag => {
+        html += `
+            <div class="filter-option ${currentFilters.has(tag) ? 'selected' : ''}" onclick="toggleFilter('${tag}')">
+                <span>${tag}</span>
+                <span class="filter-count">${tagCounts[tag]}</span>
+            </div>
+        `;
+    });
+    
+    dropdown.innerHTML = html;
+}
 
-        function applyFilter(filter) {
-            currentFilter = filter;
-            saveData(); // Save filter preference
-            document.getElementById('filterDropdown').classList.remove('active');
-            renderTasks();
+        function toggleFilter(filter) {
+    if (filter === 'all') {
+        // If "All" is clicked, clear everything and select only "All"
+        currentFilters.clear();
+        currentFilters.add('all');
+    } else {
+        // Remove "All" if selecting specific tags
+        currentFilters.delete('all');
+        
+        // Toggle the clicked tag
+        if (currentFilters.has(filter)) {
+            currentFilters.delete(filter);
+        } else {
+            currentFilters.add(filter);
         }
+        
+        // If no filters selected, default back to "All"
+        if (currentFilters.size === 0) {
+            currentFilters.add('all');
+        }
+    }
+    
+    saveData();
+    updateFilterDropdown(); // Update the dropdown to show selected state
+    
+    // Re-render based on current page
+    if (currentPage === 'tasks') {
+        renderTasks();
+    } else if (currentPage === 'focus') {
+        renderFocusPage();
+    }
+}
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
@@ -421,7 +453,7 @@ function initSubtaskDragDrop() {
             // Formula using custom weights
             const score = (task.importance * weights.importance) + 
                          (task.effort * weights.effort) + 
-                         ((5-daysRemaining / 2) * weights.urgency);
+                         ((7-daysRemaining / 2) * weights.urgency);
             
             return {
                 score: score,
@@ -430,34 +462,52 @@ function initSubtaskDragDrop() {
         }
 
         function toggleTask(id) {
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                task.completed = !task.completed;
-                saveData(); // Save to localStorage
-                renderTasks();
-            }
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        task.completed = !task.completed;
+        saveData();
+        
+        // Re-render the current page
+        if (currentPage === 'tasks') {
+            renderTasks();
+        } else if (currentPage === 'focus') {
+            renderFocusPage();
         }
+    }
+}
 
         function toggleTaskExpansion(id) {
-            if (expandedTasks.has(id)) {
-                expandedTasks.delete(id);
-            } else {
-                expandedTasks.add(id);
-            }
-            renderTasks();
-        }
+    if (expandedTasks.has(id)) {
+        expandedTasks.delete(id);
+    } else {
+        expandedTasks.add(id);
+    }
+    
+    // Re-render the current page
+    if (currentPage === 'tasks') {
+        renderTasks();
+    } else if (currentPage === 'focus') {
+        renderFocusPage();
+    }
+}
 
         function toggleSubtask(taskId, subtaskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (task) {
-                const subtask = task.subtasks.find(st => st.id === subtaskId);
-                if (subtask) {
-                    subtask.completed = !subtask.completed;
-                    saveData(); // Save to localStorage
-                    renderTasks();
-                }
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+        const subtask = task.subtasks.find(st => st.id === subtaskId);
+        if (subtask) {
+            subtask.completed = !subtask.completed;
+            saveData();
+            
+            // Re-render the current page
+            if (currentPage === 'tasks') {
+                renderTasks();
+            } else if (currentPage === 'focus') {
+                renderFocusPage();
             }
         }
+    }
+}
 
         function deleteTask(id) {
             tasks = tasks.filter(t => t.id !== id);
@@ -469,23 +519,27 @@ function initSubtaskDragDrop() {
             const taskList = document.getElementById('taskList');
             
             // Filter tasks based on current filter
-            let filteredTasks = tasks;
-            if (currentFilter !== 'all') {
-                filteredTasks = tasks.filter(t => t.tag === currentFilter);
-            }
-            
-            if (filteredTasks.length === 0) {
-                const message = currentFilter === 'all' 
-                    ? 'Click the + button to add your first task!'
-                    : `No tasks with tag "${currentFilter}"`;
-                taskList.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No tasks ${currentFilter === 'all' ? 'yet' : 'found'}</h3>
-                        <p>${message}</p>
-                    </div>
-                `;
-                return;
-            }
+            // Filter tasks based on current filters
+let filteredTasks = tasks;
+if (!currentFilters.has('all')) {
+    filteredTasks = tasks.filter(t => t.tag && currentFilters.has(t.tag));
+}
+
+if (filteredTasks.length === 0) {
+    const filterList = currentFilters.has('all') 
+        ? 'all tags' 
+        : [...currentFilters].join(', ');
+    const message = currentFilters.has('all') 
+        ? 'Click the + button to add your first task!'
+        : `No tasks with tags: ${filterList}`;
+    taskList.innerHTML = `
+        <div class="empty-state">
+            <h3>No tasks ${currentFilters.has('all') ? 'yet' : 'found'}</h3>
+            <p>${message}</p>
+        </div>
+    `;
+    return;
+}
 
             // Calculate scores for filtered tasks
             const tasksWithScores = filteredTasks.map(task => ({
@@ -585,8 +639,11 @@ function initSubtaskDragDrop() {
             </div>
             <div class="score-badge">${task.score.toFixed(2)}</div>
             <div class="task-actions">
+                <button class="pin-btn ${pinnedTasks.has(task.id) ? 'pinned' : ''}" onclick="togglePinTask(${task.id})">
+                    ${pinnedTasks.has(task.id) ? '📌' : '📌'}
+                </button>
                 <button class="btn-edit" onclick="editTask(${task.id})">✎</button>
-                <button class="btn-delete" onclick="deleteTask(${task.id})">X</button>
+                <button class="btn-delete" onclick="deleteTask(${task.id})">🗑</button>
             </div>
         </div>
         ${isExpanded ? `
@@ -631,6 +688,199 @@ function initSubtaskDragDrop() {
         }
     });
 }
-        // Initial render
-        loadData();
+
+function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        function openSettingsModalFromSidebar() {
+            closeSidebar();
+            setTimeout(() => {
+                openSettingsModal();
+            }, 300);
+        }
+
+        function navigateToPage(page) {
+    currentPage = page;
+    
+    // Hide all pages
+    document.getElementById('tasksPage').classList.remove('active');
+    document.getElementById('focusPage').classList.remove('active');
+    
+    // Show selected page
+    if (page === 'tasks') {
+        document.getElementById('tasksPage').classList.add('active');
         renderTasks();
+    } else if (page === 'focus') {
+        document.getElementById('focusPage').classList.add('active');
+        renderFocusPage();
+    }
+    
+    closeSidebar();
+}
+
+function togglePinTask(id) {
+    if (pinnedTasks.has(id)) {
+        pinnedTasks.delete(id);
+    } else {
+        pinnedTasks.add(id);
+    }
+    saveData();
+    
+    if (currentPage === 'tasks') {
+        renderTasks();
+    } else if (currentPage === 'focus') {
+        renderFocusPage();
+    }
+}
+
+        function renderFocusPage() {
+            const focusList = document.getElementById('focusList');
+            
+            const focusedTasks = tasks.filter(t => pinnedTasks.has(t.id));
+            
+            if (focusedTasks.length === 0) {
+                focusList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No focused tasks</h3>
+                        <p>Go to All Tasks and pin tasks to focus on them!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate scores for focused tasks
+            const tasksWithScores = focusedTasks.map(task => ({
+                ...task,
+                ...calculateScore(task)
+            }));
+            
+            // Sort by completion and score
+            const sortedTasks = tasksWithScores.sort((a, b) => {
+                if (a.completed && !b.completed) return 1;
+                if (!a.completed && b.completed) return -1;
+                if (!a.completed && !b.completed) {
+                    return b.score - a.score;
+                }
+                return 0;
+            });
+            
+            focusList.innerHTML = sortedTasks.map(task => {
+                const isExpanded = expandedTasks.has(task.id);
+                const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+                const hasNotes = task.notes && task.notes.trim() !== '';
+                const canExpand = hasSubtasks || hasNotes;
+                const completedSubtasks = hasSubtasks ? task.subtasks.filter(st => st.completed).length : 0;
+                const totalSubtasks = hasSubtasks ? task.subtasks.length : 0;
+                const progressPercentage = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
+                
+                let subtasksHtml = '';
+                if (hasSubtasks && isExpanded) {
+                    subtasksHtml = `
+                        <div class="task-subtasks">
+                            <div class="subtask-progress">📋 ${completedSubtasks}/${totalSubtasks} completed</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: ${progressPercentage}%"></div>
+                            </div>
+                            <div class="task-subtasks-sortable" id="subtasks-${task.id}">
+                            ${task.subtasks.map(subtask => `
+    <div class="task-subtask-item ${subtask.completed ? 'completed' : ''}" data-subtask-id="${subtask.id}">
+        <span style="cursor:move; color:#6c757d; margin-right:8px; font-size:16px;">☰</span>
+        <input 
+            type="checkbox" 
+            ${subtask.completed ? 'checked' : ''}
+            onchange="toggleSubtask(${task.id}, ${subtask.id})"
+        >
+        <span class="task-subtask-text">
+            ${subtask.text}
+            ${subtask.duration ? `<span style="color:#667eea; font-size:12px;"> (${subtask.duration} min)</span>` : ''}
+        </span>
+    </div>
+`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                let notesHtml = '';
+                if (hasNotes && isExpanded) {
+                    notesHtml = `
+                        <div style="margin-top:15px; padding:12px; background:#fff; border-radius:8px; border:1px solid #e9ecef;">
+                            <div style="font-size:13px; font-weight:600; color:#495057; margin-bottom:8px;">
+                                📝 Notes
+                            </div>
+                            <div style="font-size:14px; color:#212529; white-space:pre-wrap;">${task.notes}</div>
+                        </div>
+                    `;
+                }
+                
+                let collapsedProgressBar = '';
+                if (hasSubtasks && !isExpanded) {
+                    collapsedProgressBar = `
+                        <div class="progress-bar-container" style="margin-top: 10px;">
+                            <div class="progress-bar-fill" style="width: ${progressPercentage}%"></div>
+                        </div>
+                    `;
+                }
+                
+                    return `
+        <div class="task-item ${task.completed ? 'completed' : ''} ${isExpanded ? 'expanded' : ''}">
+            <div class="task-header-row">
+                ${canExpand ? `<button class="expand-btn" onclick="toggleTaskExpansion(${task.id})">▶</button>` : '<div style="width: 24px;"></div>'}
+                <input 
+                    type="checkbox" 
+                    class="task-checkbox" 
+                    ${task.completed ? 'checked' : ''}
+                    onchange="toggleTask(${task.id})"
+                >
+                <div class="task-content">
+                    <div class="task-title">${task.name}</div>
+                    <div class="task-meta">
+                        <span>⏰ ${task.daysRemaining} days </span>
+                        <span>💪 Effort: ${task.effort}</span>
+                        ${task.tag ? `<span class="task-tag">${task.tag}</span>` : ''}
+                        ${hasSubtasks && !isExpanded ? `<span>📋 ${completedSubtasks}/${totalSubtasks}</span>` : ''}
+                        ${hasNotes && !isExpanded ? `<span>📝 Note</span>` : ''}
+                    </div>
+                    ${collapsedProgressBar}
+                </div>
+                <div class="score-badge">${task.score.toFixed(2)}</div>
+                <div class="task-actions">
+                    <button class="pin-btn pinned" onclick="togglePinTask(${task.id})">📌 Unpin</button>
+                    <button class="btn-edit" onclick="editTask(${task.id})">✎</button>
+                    <button class="btn-delete" onclick="deleteTask(${task.id})">🗑</button>
+                </div>
+            </div>
+            ${isExpanded ? `
+                <div class="task-expandable-content">
+                    ${subtasksHtml}
+                    ${notesHtml}
+                </div>
+            ` : ''}
+        </div>
+    `;
+}).join('');
+            
+            // Initialize drag-drop for subtasks
+            sortedTasks.forEach(task => {
+                if (expandedTasks.has(task.id) && task.subtasks && task.subtasks.length > 0) {
+                    initTaskSubtaskDragDrop(task.id);
+                }
+            });
+        }
+
+// Initial render
+window.onload = function() {
+    loadData();
+    renderTasks();
+};
