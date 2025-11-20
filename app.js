@@ -716,6 +716,7 @@ function toggleSidebar() {
     // Hide all pages
     document.getElementById('tasksPage').classList.remove('active');
     document.getElementById('focusPage').classList.remove('active');
+    document.getElementById('aboutPage').classList.remove('active');
     
     // Show selected page
     if (page === 'tasks') {
@@ -724,6 +725,8 @@ function toggleSidebar() {
     } else if (page === 'focus') {
         document.getElementById('focusPage').classList.add('active');
         renderFocusPage();
+    } else if (page === 'about') {
+        document.getElementById('aboutPage').classList.add('active');
     }
     
     closeSidebar();

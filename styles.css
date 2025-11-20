@@ -13,13 +13,14 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #6495ff 0%, #216DFF 100%);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            position: relative;
-            min-height: 70px;
-        }
+    background: linear-gradient(135deg, #6495ff 0%, #216DFF 100%);
+    color: white;
+    padding: 15px;
+    text-align: center;
+    position: relative;
+    min-height: 70px;
+    margin-bottom: 20px;
+}
 
         .header h1 {
             font-size: 2em;
@@ -27,12 +28,7 @@
         }
         
 .container {
-    max-width: 800px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    overflow: hidden;
+    width: 100%
 }
         .filter-btn {
             position: absolute;
@@ -283,9 +279,8 @@
         }
 
         .task-list {
-            padding: 10px;
-        }
-
+    padding: 10px 0;
+}
         .task-item {
             background: white;
             border: 2px solid #e9ecef;
@@ -786,7 +781,7 @@
 
 /* Focus page styles */
 .focus-content {
-    padding: 20px;
+    padding: 20px 0;
 }
 
 .focus-instructions {
@@ -806,7 +801,7 @@
 }
 
 .focus-list {
-    padding: 10px;
+    padding: 10px 0;
 }
 
 .pin-btn {
@@ -837,4 +832,60 @@
 .sidebar-item.active {
     background: #e7f3ff;
     border-color: #667eea;
+}
+
+/* About page styles */
+.about-content {
+    padding: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.about-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.about-section h2 {
+    color: #216DFF;
+    font-size: 1.4em;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.about-section p {
+    color: #495057;
+    line-height: 1.6;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.about-section ul {
+    list-style: disc;
+    padding-left: 25px;
+}
+
+.about-section ul li {
+    color: #495057;
+    line-height: 1.8;
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.about-section strong {
+    color: #212529;
+    font-weight: 600;
+}
+
+.about-section code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #e83e8c;
 }

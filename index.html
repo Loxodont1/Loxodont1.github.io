@@ -34,6 +34,10 @@
                 <span class="sidebar-icon">⚙️</span>
                 <span>Weight Settings</span>
             </button>
+            <button class="sidebar-item" onclick="navigateToPage('about')">
+        <span class="sidebar-icon">ℹ️</span>
+        <span>WTF is this app</span>
+    </button>
         </div>
     </div>
 
@@ -74,12 +78,85 @@
 
         <div class="focus-content">
             <div class="focus-instructions">
-                <p>Pin tasks here to focus on them</p>
+                <p>Here you can pin tasks that you want to focus on</p>
             </div>
             <div class="focus-list" id="focusList">
                 <div class="empty-state">
                     <h3>No focused tasks</h3>
                     <p>Go to All Tasks and pin tasks to focus on them!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="page" id="aboutPage">
+            <div class="header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <h1>ℹ️ WTF is this app</h1>
+            </div>
+
+            <div class="about-content">
+                <div class="about-section">
+                    <p>Hi! Welcome to my app.</p>
+                    <p>In this section I am going to explain to you WTF is this app.</p>
+                    <p>It is a simple task organizer with a small twist...it is trying to help you to offload what task to do first or next. Together with some other helpful features to keep you on track. </p>
+                    <p>It does so by giving each task a score based on these metrics (which are derived from Eisenhower matrix):</p>
+                    <ul>
+                         <li>Importance, 1-5 (How important is this task for you/your life/your work?)</li>
+                         <li>Effort, 1-5 (How much effort do I have to put in to finish it?)</li>
+                         <li>Urgency (This one is calucled based on how many days are left)</li>
+                    </ul>
+                    <p>App then takes these values, adds them up, generates you a score and orders your tasks.</p>
+                    <p>But that's not everything! You can find everything that it can do below.</p>
+                </div>
+                <div class="about-section">
+                    <h2>Weights</h2>
+                    <p>This feature allows you to determine how much certain metric influences your score.</p>
+                    <p>So it allows you to determine which of the metrics is important for you and what you want to nuance. For example:</p>
+                    <ul>
+                         <li>If you want to more important tasks first -> Give more weight to Importance</li>
+                         <li>Is how much time a task takes important? -> Give more weight to Effort</li>
+                         <li>Do you want to get tasks that are closer to current day first? -> Give more weight to Urgency</li>
+                         <li>Is Importance not important for you and just want a score based on Effort and Urgency?-> No problem! Just put Importance weight to 0 </li>
+                    </ul>
+                    <p>Try it out yourself! Just go to "Weights" in the sidebar</p>
+                </div>
+                <div class="about-section">
+                    <h2>Tasks</h2>
+                    <p>To create a task click on the big plus sign "+" (in case you don't know how it looks)</p>
+                    <p>Then fillout the fields and determine how importan, demanding and urgent your task is and press "Save Task"</p>
+                    <h3>Huh? What is the Subtask thingy?</h3>
+                    <p>I am glad you asked my friend.</p>
+                    <p>You can easily break up a task into smaller or individual parts that you can then tick off as you complete them.</p>
+                    <p>It is especially helpful to get you going and "knowing your next step". This way you can make task more digestable.</p>
+                    <p>App will also track your progress as you get the job done.</p>
+                </div>
+                <div class="about-section">
+                    <h2>Focus Mode</h2>
+                    <p>Sometimes you might want to display only on certain tasks when you are working and not go throught the whole list. Don't worry I got you.</p>
+                    <p>Simply pin one of your tasks and then navigate to "Focus Mode" in the side bar. Now you know what to focus on today.</p>
+                </div>
+
+                <div class="about-section">
+                    <h2>Tags</h2>
+                    <p>To each task you can also assign a tag. This should help you to keep stuff nicely organized.</p>
+                    <p>You can then filter the tags.</p>
+                    <p>(Btw you can also filter multiple tags at the same time.</p>
+                </div>
+
+                <div class="about-section">
+                    <h2>Disclaimers</h2>
+                    <ul>
+                        <li>NO WORRIES! if the score is negative. It is just, becuase of the way the formula is structured. As you will be getting closer to the deadline it will turn positive again.</li>
+                        <li>This app is still under the development, so you might experience some technical turbulances.</li>
+                        <li>I will be glad for any feedback you have on it :)</li>
+                    </ul>
+                </div>
+                <div class="about-section">
+                    <p>I hope you enjoy the app and it will help you to get the work done.</p>
                 </div>
             </div>
         </div>
