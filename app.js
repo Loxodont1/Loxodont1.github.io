@@ -169,11 +169,18 @@ let pinnedTasks = new Set();
     initSubtaskDragDrop();
 }
 
+let subtaskSortableInstance = null;
+
 function initSubtaskDragDrop() {
     const container = document.getElementById('subtasksList');
     if (!container || container.children.length === 0) return;
     
-    new Sortable(container, {
+    // Destroy existing instance if it exists
+    if (subtaskSortableInstance) {
+        subtaskSortableInstance.destroy();
+    }
+    
+    subtaskSortableInstance = new Sortable(container, {
         animation: 150,
         ghostClass: 'sortable-ghost',
         dragClass: 'sortable-drag',
@@ -577,6 +584,7 @@ if (filteredTasks.length === 0) {
                             <div class="task-subtasks-sortable" id="subtasks-${task.id}">
                             ${task.subtasks.map(subtask => `
     <div class="task-subtask-item ${subtask.completed ? 'completed' : ''}" data-subtask-id="${subtask.id}">
+        <span class="subtask-drag-handle" style="cursor:move; color:#6c757d; margin-right:8px; font-size:16px;">☰</span>
         <input 
             type="checkbox" 
             ${subtask.completed ? 'checked' : ''}
@@ -671,8 +679,7 @@ if (filteredTasks.length === 0) {
         animation: 150,
         ghostClass: 'sortable-ghost',
         dragClass: 'sortable-drag',
-        delay: 200,
-        delayOnTouchOnly: true,
+        handle: '.subtask-drag-handle',
         onEnd: function(evt) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
@@ -684,7 +691,13 @@ if (filteredTasks.length === 0) {
             task.subtasks.splice(newIndex, 0, movedSubtask);
             
             saveData();
-            renderTasks();
+            
+            // Re-render the current page
+            if (currentPage === 'tasks') {
+                renderTasks();
+            } else if (currentPage === 'focus') {
+                renderFocusPage();
+            }
         }
     });
 }
@@ -717,6 +730,7 @@ function toggleSidebar() {
     document.getElementById('tasksPage').classList.remove('active');
     document.getElementById('focusPage').classList.remove('active');
     document.getElementById('aboutPage').classList.remove('active');
+    document.getElementById('transferPage').classList.remove('active');
     
     // Show selected page
     if (page === 'tasks') {
@@ -727,6 +741,8 @@ function toggleSidebar() {
         renderFocusPage();
     } else if (page === 'about') {
         document.getElementById('aboutPage').classList.add('active');
+    } else if (page === 'transfer') {
+        document.getElementById('transferPage').classList.add('active');
     }
     
     closeSidebar();
@@ -798,7 +814,7 @@ function togglePinTask(id) {
                             <div class="task-subtasks-sortable" id="subtasks-${task.id}">
                             ${task.subtasks.map(subtask => `
     <div class="task-subtask-item ${subtask.completed ? 'completed' : ''}" data-subtask-id="${subtask.id}">
-        <span style="cursor:move; color:#6c757d; margin-right:8px; font-size:16px;">☰</span>
+        <span class="subtask-drag-handle" style="cursor:move; color:#6c757d; margin-right:8px; font-size:16px;">☰</span>
         <input 
             type="checkbox" 
             ${subtask.completed ? 'checked' : ''}
@@ -859,7 +875,7 @@ function togglePinTask(id) {
                 </div>
                 <div class="score-badge">${task.score.toFixed(2)}</div>
                 <div class="task-actions">
-                    <button class="pin-btn pinned" onclick="togglePinTask(${task.id})">📌 Unpin</button>
+                    <button class="pin-btn pinned" onclick="togglePinTask(${task.id})">📌</button>
                     <button class="btn-edit" onclick="editTask(${task.id})">✎</button>
                     <button class="btn-delete" onclick="deleteTask(${task.id})">🗑</button>
                 </div>
@@ -881,6 +897,222 @@ function togglePinTask(id) {
                 }
             });
         }
+
+        // QR Code Transfer Functions
+function generateQR() {
+    try {
+        console.log('Starting QR generation...');
+        
+        // Only export current tasks (make a fresh copy)
+        const exportData = {
+            tasks: tasks.filter(t => t), // Remove any null/undefined
+            weights: weights,
+            pinnedTasks: [...pinnedTasks].filter(id => tasks.find(t => t.id === id)), // Only pin IDs that exist
+            exportDate: new Date().toISOString()
+        };
+        
+        console.log('Exporting', exportData.tasks.length, 'tasks');
+        
+        // Show export info
+        document.getElementById('exportTaskCount').textContent = exportData.tasks.length;
+        document.getElementById('exportInfo').style.display = 'block';
+        
+        const dataString = JSON.stringify(exportData);
+        console.log('Data size:', dataString.length, 'characters');
+        
+        // Check if data is too large
+        if (dataString.length > 2000) {
+            alert('Warning: Your data is very large (' + dataString.length + ' characters). Try exporting fewer tasks or removing some notes/subtasks.');
+            return;
+        }
+        
+        const container = document.getElementById('qrCanvas');
+        
+        if (!container) {
+            alert('Error: Container element not found!');
+            return;
+        }
+        
+        if (typeof qrcode === 'undefined') {
+            alert('Error: QRCode library not loaded! Please refresh the page.');
+            return;
+        }
+        
+        // Clear previous QR code
+        container.innerHTML = '';
+        
+        // Create QR code with high error correction
+        const qr = qrcode(0, 'L'); // Type 0 = auto, 'L' = low error correction for more data capacity
+        qr.addData(dataString);
+        qr.make();
+        
+        // Create image with larger size for better scanning
+        const cellSize = 4;
+        const margin = 4;
+        const size = qr.getModuleCount();
+        const imgSize = size * cellSize + margin * 2 * cellSize;
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = imgSize;
+        canvas.height = imgSize;
+        const ctx = canvas.getContext('2d');
+        
+        // White background
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, imgSize, imgSize);
+        
+        // Draw QR code
+        ctx.fillStyle = '#000000';
+        for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                if (qr.isDark(row, col)) {
+                    ctx.fillRect(
+                        col * cellSize + margin * cellSize,
+                        row * cellSize + margin * cellSize,
+                        cellSize,
+                        cellSize
+                    );
+                }
+            }
+        }
+        
+        // Convert to image
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        img.style.border = '3px solid #dee2e6';
+        img.style.borderRadius = '8px';
+        img.style.padding = '10px';
+        img.style.background = 'white';
+        
+        container.appendChild(img);
+        
+        // Store canvas for download
+        container.canvas = canvas;
+        
+        console.log('QR code generated successfully!');
+        document.getElementById('qrCodeContainer').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Unexpected error:', error);
+        alert('Unexpected error: ' + error.message);
+    }
+}
+
+function downloadQR() {
+    const container = document.getElementById('qrCanvas');
+    const canvas = container.canvas;
+    
+    if (!canvas) {
+        alert('Please generate a QR code first!');
+        return;
+    }
+    
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = 'tasks-export-' + Date.now() + '.png';
+    link.href = url;
+    link.click();
+}
+
+function handleQRUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const status = document.getElementById('importStatus');
+    status.className = '';
+    status.textContent = '⏳ Reading QR code...';
+    
+    if (typeof jsQR === 'undefined') {
+        status.className = 'error';
+        status.textContent = '❌ Error: QR reader library not loaded. Please refresh the page.';
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            try {
+                // Create canvas to read QR code
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                // Get image data
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                
+                // Decode QR code
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+                
+                if (code && code.data) {
+                    console.log('QR code data found:', code.data.substring(0, 100) + '...');
+                    
+                    try {
+                        const importedData = JSON.parse(code.data);
+                        
+                        // Validate imported data
+                        if (!importedData.tasks || !Array.isArray(importedData.tasks)) {
+                            throw new Error('Invalid data format');
+                        }
+                        
+                        // Replace current data
+                        tasks = importedData.tasks;
+                        weights = importedData.weights || { importance: 0.1, effort: 0.4, urgency: 0.5 };
+                        pinnedTasks = new Set(importedData.pinnedTasks || []);
+                        
+                        // Save to localStorage
+                        saveData();
+                        
+                        // Show success message
+                        status.className = 'success';
+                        status.textContent = `✅ Successfully imported ${tasks.length} task${tasks.length !== 1 ? 's' : ''}!`;
+                        
+                        // Clear status after 5 seconds
+                        setTimeout(() => {
+                            status.textContent = '';
+                            status.className = '';
+                        }, 5000);
+                        
+                    } catch (parseError) {
+                        console.error('Parse error:', parseError);
+                        status.className = 'error';
+                        status.textContent = '❌ Error: Invalid QR code data format';
+                    }
+                } else {
+                    console.error('Could not read QR code from image');
+                    status.className = 'error';
+                    status.textContent = '❌ Error: Could not read QR code. Make sure the image is clear and the QR code is fully visible.';
+                }
+            } catch (error) {
+                console.error('Processing error:', error);
+                status.className = 'error';
+                status.textContent = '❌ Error processing image: ' + error.message;
+            }
+        };
+        
+        img.onerror = function() {
+            status.className = 'error';
+            status.textContent = '❌ Error loading image file';
+        };
+        
+        img.src = e.target.result;
+    };
+    
+    reader.onerror = function() {
+        status.className = 'error';
+        status.textContent = '❌ Error reading file';
+    };
+    
+    reader.readAsDataURL(file);
+    
+    // Clear the file input so the same file can be selected again
+    event.target.value = '';
+}
 
 // Initial render
 window.onload = function() {

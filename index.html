@@ -34,6 +34,10 @@
                 <span class="sidebar-icon">⚙️</span>
                 <span>Weight Settings</span>
             </button>
+            <button class="sidebar-item" onclick="navigateToPage('transfer')">
+        <span class="sidebar-icon">🔄</span>
+        <span>Transfer Data</span>
+    </button>
             <button class="sidebar-item" onclick="navigateToPage('about')">
         <span class="sidebar-icon">ℹ️</span>
         <span>WTF is this app</span>
@@ -88,7 +92,73 @@
             </div>
         </div>
     </div>
-    <div class="page" id="aboutPage">
+<!-- Transfer Page -->
+<div class="page" id="transferPage">
+    <div class="header">
+        <button class="hamburger-btn" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <h1>🔄 Transfer Data</h1>
+    </div>
+
+    <div class="transfer-content">
+        <!-- Warning Bar -->
+        <div class="transfer-warning">
+            <h3>⚠️ Important</h3>
+            <p>Current data transfer works in a way that it will take all the current tasks from the current device and paste them into the other device (So it deletes the data and pastes new ones in)</p>
+            <p>So, just be careful with what tasks you have displayed, what tasks you deleted and which ones you created and that important tasks are in the task list.</p>
+            <p>Disclaimer: The app developer is not responsible for any data loss.</p>
+        </div>
+
+        <div class="transfer-warning">
+            <h3>How this works:</h3>
+            <p>1. Check your current list</p>
+            <p>2. Press "Generate QR code"</p>
+            <p>3. Download the QR code and transfer to the other device (Whatsapp, email etc.)</p>
+            <p>4. Open the QR code on new device (app or browser) using "Upload QR code"</p>
+        </div>
+
+        <!-- Export Section -->
+        <div class="transfer-section">
+            <h2>📤 Export Data</h2>
+            <p>Generate a QR code with all your current tasks. Download it and transfer to another device.</p>
+            
+            <div id="exportInfo" style="background: #e7f3ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none;">
+                <strong>Ready to export:</strong> <span id="exportTaskCount">0</span> tasks
+            </div>
+            
+            <button class="transfer-btn export-btn" onclick="generateQR()">
+                Generate QR Code
+            </button>
+
+            <div id="qrCodeContainer" style="display: none; margin-top: 20px; text-align: center;">
+                <div id="qrCanvas"></div>
+                <br>
+                <button class="transfer-btn download-btn" onclick="downloadQR()">
+                    Download QR Code
+                </button>
+            </div>
+        </div>
+
+        <!-- Import Section -->
+        <div class="transfer-section">
+            <h2>📥 Import Data</h2>
+            <p>Upload a QR code image to import tasks from another device.</p>
+            
+            <input type="file" id="qrUpload" accept="image/*" style="display: none;" onchange="handleQRUpload(event)">
+            <button class="transfer-btn import-btn" onclick="document.getElementById('qrUpload').click()">
+                Upload QR Code
+            </button>
+
+            <div id="importStatus" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- About Page -->
+<div class="page" id="aboutPage">
             <div class="header">
                 <button class="hamburger-btn" onclick="toggleSidebar()">
                     <span></span>
@@ -148,12 +218,13 @@
                 </div>
 
                 <div class="about-section">
-                    <h2>Info and Disclaimers</h2>
+                    <h2>Disclaimers and stuff that didn't fit into the other sections</h2>
                     <ul>
                         <li>All your data is stored in your device, so you can use it offline without any trouble.</li>
                         <li><strong>Watch out for deleting your browser data (or cache) as this app is directly connected to your browser. So, if you delete them, all your tasks will be lost. x_x</strong></li>
                         <li>NO WORRIES! if the score is negative. It is just, becuase of the way the formula is structured. As you will be getting closer to the deadline it will turn positive again.</li>
                         <li>This app is still under the development, so you might experience some technical turbulances.</li>
+                        <li>In case that one day you open the app and stuff is not working or it looks weird, just know that I am as suprised as you and I am trying to put out the fire <3</li>
                         <li>I will be glad for any feedback you have on it :)</li>
                     </ul>
                 </div>
@@ -267,6 +338,8 @@
             <button class="btn-save" onclick="saveWeights()">Apply Weights</button>
         </div>
     </div>
+    <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+    <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="app.js"></script>
 </body>
