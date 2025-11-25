@@ -1,4 +1,4 @@
-const CACHE_NAME = 'task-app-11v';
+const CACHE_NAME = 'task-app-12v';
 
 // Add all the files needed for the app shell
 const FILES_TO_CACHE = [

@@ -81,6 +81,7 @@ let pinnedTasks = new Set();
             document.getElementById('importanceValue').textContent = '0';
             document.getElementById('effortValue').textContent = '0';
             document.getElementById('deadline').value = '';
+            document.getElementById('disableScore').checked = false;
             // Clear subtasks
             subtaskInputs = [];
             document.getElementById('subtasksList').innerHTML = '<p class="subtask-empty">No subtasks added yet</p>';
@@ -344,15 +345,16 @@ function initSubtaskDragDrop() {
             const importance = parseInt(document.getElementById('importance').value);
             const effort = parseInt(document.getElementById('effort').value);
             const deadline = document.getElementById('deadline').value;
+            const disableScore = document.getElementById('disableScore').checked;
 
             if (!name) {
                 alert('Please enter a task name');
                 return;
             }
 
-            if (!deadline) {
-                alert('Please select a deadline');
-                return;
+            if (!deadline && !disableScore) {
+    alert('Please select a deadline (or enable "Disable scoring")');
+    return;
             }
 
             // Collect subtasks
@@ -391,7 +393,8 @@ function initSubtaskDragDrop() {
                         effort: effort,
                         deadline: deadline,
                         subtasks: subtasks,
-                        notes: notes
+                        notes: notes,
+                        disableScore: disableScore
                     };
                 }
             } else {
@@ -405,7 +408,8 @@ function initSubtaskDragDrop() {
                     deadline: deadline,
                     completed: false,
                     subtasks: subtasks,
-                    notes: notes
+                    notes: notes,
+    disableScore: disableScore
                 };
                 tasks.push(task);
             }
@@ -430,6 +434,7 @@ function initSubtaskDragDrop() {
             document.getElementById('importanceValue').textContent = task.importance;
             document.getElementById('effortValue').textContent = task.effort;
             document.getElementById('deadline').value = task.deadline;
+            document.getElementById('disableScore').checked = task.disableScore || false;
 
             // Populate subtasks
             subtaskInputs = task.subtasks.map(st => ({
@@ -554,15 +559,27 @@ if (filteredTasks.length === 0) {
                 ...calculateScore(task)
             }));
 
-            // Sort: incomplete tasks by score (descending), then completed tasks
-            const sortedTasks = tasksWithScores.sort((a, b) => {
-                if (a.completed && !b.completed) return 1;
-                if (!a.completed && b.completed) return -1;
-                if (!a.completed && !b.completed) {
-                    return b.score - a.score;
-                }
-                return 0;
-            });
+            // Sort: incomplete scored tasks first, then incomplete unscored, then completed
+const sortedTasks = tasksWithScores.sort((a, b) => {
+    // Completed tasks always go last
+    if (a.completed && !b.completed) return 1;
+    if (!a.completed && b.completed) return -1;
+    
+    // Among incomplete tasks
+    if (!a.completed && !b.completed) {
+        // Tasks with disabled scores go after scored tasks
+        if (a.disableScore && !b.disableScore) return 1;
+        if (!a.disableScore && b.disableScore) return -1;
+        
+        // Both have disabled scores - maintain order
+        if (a.disableScore && b.disableScore) return 0;
+        
+        // Both have scores - sort by score
+        return b.score - a.score;
+    }
+    
+    return 0;
+});
 
             taskList.innerHTML = sortedTasks.map(task => {
                 const isExpanded = expandedTasks.has(task.id);
@@ -645,7 +662,7 @@ if (filteredTasks.length === 0) {
                 </div>
                 ${collapsedProgressBar}
             </div>
-            <div class="score-badge">${task.score.toFixed(2)}</div>
+            ${task.disableScore ? '' : `<div class="score-badge">${task.score.toFixed(2)}</div>`}
             <div class="task-actions">
                 <button class="pin-btn ${pinnedTasks.has(task.id) ? 'pinned' : ''}" onclick="togglePinTask(${task.id})">
                     ${pinnedTasks.has(task.id) ? '📌' : '📌'}
@@ -731,6 +748,7 @@ function toggleSidebar() {
     document.getElementById('focusPage').classList.remove('active');
     document.getElementById('aboutPage').classList.remove('active');
     document.getElementById('transferPage').classList.remove('active');
+    document.getElementById('timelinePage').classList.remove('active');
     
     // Show selected page
     if (page === 'tasks') {
@@ -743,6 +761,9 @@ function toggleSidebar() {
         document.getElementById('aboutPage').classList.add('active');
     } else if (page === 'transfer') {
         document.getElementById('transferPage').classList.add('active');
+    } else if (page === 'timeline') {
+        document.getElementById('timelinePage').classList.add('active');
+        renderTimeline();
     }
     
     closeSidebar();
@@ -873,7 +894,7 @@ function togglePinTask(id) {
                     </div>
                     ${collapsedProgressBar}
                 </div>
-                <div class="score-badge">${task.score.toFixed(2)}</div>
+                ${task.disableScore ? '' : `<div class="score-badge">${task.score.toFixed(2)}</div>`}
                 <div class="task-actions">
                     <button class="pin-btn pinned" onclick="togglePinTask(${task.id})">📌</button>
                     <button class="btn-edit" onclick="editTask(${task.id})">✎</button>
@@ -897,6 +918,95 @@ function togglePinTask(id) {
                 }
             });
         }
+
+        function renderTimeline() {
+    const container = document.getElementById('timelineContent');
+    
+    // Get tasks with deadlines only
+    const tasksWithDeadlines = tasks.filter(t => t.deadline && !t.disableScore);
+    
+    if (tasksWithDeadlines.length === 0) {
+        container.innerHTML = `
+            <div class="timeline-empty">
+                <h3>No upcoming tasks</h3>
+                <p>Tasks with deadlines will appear here on a timeline</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Get today's date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = today.toISOString().split('T')[0];
+    
+    // Group tasks by date
+    const tasksByDate = {};
+    tasksWithDeadlines.forEach(task => {
+        const dateKey = task.deadline;
+        if (!tasksByDate[dateKey]) {
+            tasksByDate[dateKey] = [];
+        }
+        tasksByDate[dateKey].push(task);
+    });
+    
+    // Get all dates and sort them
+    const dates = Object.keys(tasksByDate).sort();
+    
+    // Generate timeline starting from today
+    const startDate = new Date(Math.min(today, new Date(dates[0])));
+    const endDate = new Date(Math.max(today, new Date(dates[dates.length - 1])));
+    
+    // Add buffer
+    endDate.setDate(endDate.getDate() + 7);
+    
+    let html = '';
+    let lastMonth = null;
+    
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+        const dateKey = currentDate.toISOString().split('T')[0];
+        const monthName = currentDate.toLocaleString('default', { month: 'long' }).toUpperCase();
+        const dayNumber = currentDate.getDate();
+        const isToday = dateKey === todayKey;
+        
+        // Show month divider when month changes
+        if (lastMonth !== monthName) {
+            html += `
+                <div class="timeline-month-divider">
+                    <div class="timeline-month-label">${monthName}</div>
+                    <div class="timeline-month-line"></div>
+                </div>
+            `;
+            lastMonth = monthName;
+        }
+        
+        // Get tasks for this date
+        const dayTasks = tasksByDate[dateKey] || [];
+        
+        // Show all days
+        html += `
+            <div class="timeline-day">
+                <div class="timeline-day-marker"></div>
+                <div class="timeline-day-number ${isToday ? 'today' : ''}">${dayNumber}</div>
+                <div class="timeline-tasks">
+                    ${dayTasks.map(task => `
+                        <div class="timeline-task-box">
+                            <div class="timeline-task-name">${task.name}</div>
+                            ${task.tag ? `<div class="timeline-task-tag">${task.tag}</div>` : ''}
+                        </div>
+                    `).join('')}
+                    ${isToday && dayTasks.length === 0 ? '<span style="color: white; font-style: italic;">No tasks today</span>' : ''}
+                </div>
+            </div>
+        `;
+        
+        // Move to next day
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    container.innerHTML = html;
+}
 
         // QR Code Transfer Functions
 function generateQR() {

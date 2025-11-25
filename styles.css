@@ -1036,3 +1036,131 @@
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
+
+/* Timeline Page Styles */
+.timeline-container {
+    padding: 20px 10px;
+    overflow-y: auto;
+}
+
+.timeline-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.timeline-month-divider {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 30px 0 20px 0;
+}
+
+.timeline-month-label {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    background: #e96c24;
+    padding: 8px 20px;
+    border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.timeline-month-line {
+    flex: 1;
+    height: 3px;
+    background: #e96c24;
+}
+
+.timeline-day {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    min-height: 60px;
+}
+
+.timeline-day-marker {
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 12px solid #e96c24;
+    flex-shrink: 0;
+}
+
+.timeline-day-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: #212529;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    min-width: 50px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.timeline-day-number.today {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.timeline-tasks {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.timeline-task-box {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    min-width: 150px;
+}
+
+.timeline-task-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-color: #667eea;
+}
+
+.timeline-task-name {
+    font-weight: 600;
+    color: #212529;
+    font-size: 14px;
+    margin-bottom: 6px;
+    word-wrap: break-word;
+}
+
+.timeline-task-tag {
+    background: #e7f3ff;
+    color: #0066cc;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.timeline-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: white;
+}
+
+.timeline-empty h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.timeline-empty p {
+    font-size: 16px;
+    opacity: 0.9;
+}

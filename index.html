@@ -30,6 +30,10 @@
                 <span class="sidebar-icon">🎯</span>
                 <span>Focus Mode</span>
             </button>
+            <button class="sidebar-item" onclick="navigateToPage('timeline')">
+    <span class="sidebar-icon">📅</span>
+    <span>Timeline</span>
+</button>
             <button class="sidebar-item" onclick="openSettingsModalFromSidebar()">
                 <span class="sidebar-icon">⚙️</span>
                 <span>Weight Settings</span>
@@ -92,6 +96,23 @@
             </div>
         </div>
     </div>
+    <!-- Timeline Page -->
+<div class="page" id="timelinePage">
+    <div class="header">
+        <button class="hamburger-btn" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <h1>📅 Timeline</h1>
+    </div>
+
+    <div class="timeline-container" id="timelineContainer">
+        <div class="timeline-content" id="timelineContent">
+            <!-- Timeline will be generated here -->
+        </div>
+    </div>
+</div>
 <!-- Transfer Page -->
 <div class="page" id="transferPage">
     <div class="header">
@@ -275,6 +296,13 @@
                 <label for="deadline">Deadline</label>
                 <input type="date" id="deadline">
             </div>
+
+            <div class="form-group">
+    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+        <input type="checkbox" id="disableScore" style="width: 20px; height: 20px; cursor: pointer;">
+        <span>Disable scoring (task goes to bottom of list)</span>
+    </label>
+</div>
 
             <div class="subtasks-section">
                 <div class="subtasks-header">
